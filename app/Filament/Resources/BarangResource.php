@@ -36,9 +36,11 @@ class BarangResource extends Resource
                 TextInput::make('nama_barang')
                     ->columnSpan(2),
                 TextInput::make('kode_barang'),
-                TextInput::make('jumlah'),
+                TextInput::make('jumlah')
+                    ->numeric(),
                 TextInput::make('harga')
-                    ->columnSpan(2),
+                    ->columnSpan(2)
+                    ->numeric(),
                 Select::make('jenis')
                     ->options([
                         'Makanan' => 'Makanan',

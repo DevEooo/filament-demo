@@ -53,9 +53,11 @@ class CustomerResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('nama_customer')
-                    ->searchable(),
+                    ->searchable()
+                    ->label('Nama'),
                 TextColumn::make('no_telp')
-                    ->searchable(),
+                    ->searchable()
+                    ->label('Nomor Telepon'),
                 TextColumn::make('email')
                     ->searchable(),
                 TextColumn::make('alamat')

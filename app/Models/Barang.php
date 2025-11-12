@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Barang extends Model
 {
     use HasFactory;
-
     protected $guarded = [];
+
+    public function invoice() {
+        return $this->hasMany(Invoice::class);
+    }
 }
