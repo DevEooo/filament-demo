@@ -1,7 +1,4 @@
-# TODO: Fix Invoice Table and Relationships
+# TODO for Customer ID Visibility in Faktur Form
 
-- [x] Create migration to add 'faktur_id' foreign key and 'deleted_at' column to 'invoice' table
-- [x] Update Invoice model to fix belongsTo relationship with Faktur
-- [x] Update FakturResource form to add 'qty' field in the invoice Repeater
-- [ ] Run the migration to update the database
-- [ ] Test the application to ensure the error is fixed
+- [x] Update FakturResource.php to make 'kode_customer' always visible and fix afterStateUpdated hook
+- [ ] Test the form to ensure customer ID appears after selecting a customer

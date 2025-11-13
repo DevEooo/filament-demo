@@ -52,6 +52,11 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('id')
+                    ->searchable()
+                    ->label('ID Customer')
+                    ->copyable()
+                    ->copyMessage('Berhasil disalin'),
                 TextColumn::make('nama_customer')
                     ->searchable()
                     ->label('Nama'),

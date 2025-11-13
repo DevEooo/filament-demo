@@ -19,6 +19,10 @@ use Filament\Forms\Components\Select;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Forms\Components\Repeater;
+use App\Models\Customer;
+use App\Models\Barang;
+use Filament\Forms\Set;
+use Filament\Forms\Get;
 
 class FakturResource extends Resource
 {
@@ -36,27 +40,55 @@ class FakturResource extends Resource
                 TextInput::make('kode_faktur')
                     ->columnSpan(2),
                 TextInput::make('kode_customer')
-                    ->numeric(),
+                    ->numeric()
+                    ->disabled(),
                 Select::make('customer_id')
-                    ->relationship(name: 'customer', titleAttribute: 'nama_customer'),
+                    ->relationship(name: 'customer', titleAttribute: 'nama_customer')
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        $cust = Customer::find($state);
+
+                        if ($cust) {
+                            $set('kode_customer', $cust->id);
+                        }
+                    }),
                 Repeater::make('invoice')
                     ->relationship()
                     ->schema([
                         Select::make('barang_id')
-                            ->relationship(name: 'barang', titleAttribute: 'nama_barang'),
+                            ->relationship(name: 'barang', titleAttribute: 'nama_barang')
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                $barang = Barang::find($state);
+
+                                if ($barang) {
+                                    $set('nama_barang', $barang->nama_barang);
+                                    $set('harga', $barang->harga);
+                                }
+                            }),
                         TextInput::make('diskon')
                             ->numeric(),
-                        TextInput::make('nama_barang'),
+                        TextInput::make('nama_barang')
+                            ->disabled(),
                         TextInput::make('qty')
-                            ->numeric(),
+                            ->numeric()
+                            ->reactive()
+                            ->afterStateUpdated(function (Set $set, $state, Get $get) {
+                                $fixedPrice = $get('harga');
+                                $set('hasil_qty', $state * $fixedPrice);
+                            }),
                         TextInput::make('harga')
-                            ->numeric(),
+                            ->numeric()
+                            ->disabled()
+                            ->prefix('Rp. '),
                         TextInput::make('subtotal')
-                            ->numeric(),
+                            ->numeric()
+                            ->disabled(),
                         TextInput::make('hasil_qty')
                             ->numeric()
+                            ->disabled()
                     ]),
-                TextInput::make('total')    
+                TextInput::make('total')
                     ->numeric(),
                 TextInput::make('charge')
                     ->numeric(),
@@ -77,7 +109,7 @@ class FakturResource extends Resource
             ->columns([
                 TextColumn::make('kode_faktur'),
                 TextColumn::make('kode_customer'),
-                TextColumn::make('customer_id'),
+                TextColumn::make('customer.nama_customer'),
                 TextColumn::make('total'),
                 TextColumn::make('charge'),
                 TextColumn::make('nominal_charge'),
