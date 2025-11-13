@@ -41,11 +41,18 @@ class FakturResource extends Resource
                     ->columnSpan(2),
                 TextInput::make('kode_customer')
                     ->numeric()
-                    ->disabled(),
+                    ->reactive(),
                 Select::make('customer_id')
                     ->relationship(name: 'customer', titleAttribute: 'nama_customer')
                     ->reactive()
                     ->afterStateUpdated(function ($state, callable $set) {
+                        $cust = Customer::find($state);
+
+                        if ($cust) {
+                            $set('kode_customer', $cust->id);
+                        }
+                    })
+                    ->afterStateHydrated(function ($state, callable $set) {
                         $cust = Customer::find($state);
 
                         if ($cust) {
@@ -67,9 +74,19 @@ class FakturResource extends Resource
                                 }
                             }),
                         TextInput::make('diskon')
-                            ->numeric(),
+                            ->numeric()
+                            ->reactive()
+                            ->afterStateUpdated(function (Set $set, $state, Get $get) {
+                                $qtyTotal = $get('hasil_qty');
+                                $disc = $qtyTotal * ($state / 100);
+                                $total = $qtyTotal - $disc;
+
+                                $set('subtotal', intval($total));
+                            })
+                            ->suffix('%')
+                            ->label('Diskon (%)'),
                         TextInput::make('nama_barang')
-                            ->disabled(),
+                            ->reactive(),
                         TextInput::make('qty')
                             ->numeric()
                             ->reactive()
@@ -80,21 +97,43 @@ class FakturResource extends Resource
                         TextInput::make('harga')
                             ->numeric()
                             ->disabled()
+                            ->reactive()
                             ->prefix('Rp. '),
                         TextInput::make('subtotal')
                             ->numeric()
+                            ->reactive()
                             ->disabled(),
                         TextInput::make('hasil_qty')
                             ->numeric()
                             ->disabled()
+                            ->reactive(),
                     ]),
                 TextInput::make('total')
-                    ->numeric(),
+                    ->numeric()
+                    ->placeholder(function (Set $set, Get $get) {
+                        $invoice = collect($get('invoice'))->pluck('subtotal')->sum();
+                        if ($invoice == null) {
+                            $set('total', 0);
+                        } else {
+                            $set('total', $invoice);
+                        }
+                    }),
                 TextInput::make('charge')
                     ->numeric(),
                 TextInput::make('nominal_charge')
                     ->columnSpan(2)
-                    ->numeric(),
+                    ->numeric()
+                    ->reactive()
+                    ->suffix('%')
+                    ->label('Charge (%)')
+                    ->afterStateUpdated(function (Set $set, $state, Get $get) {
+                        $total = $get('total');
+                        $final = $total * ($state / 100);
+                        $result = $total + $final;
+
+                        $set('total_final', $result);
+                        $set('charge', $final);
+                    }),
                 TextInput::make('total_final')
                     ->numeric(),
                 DatePicker::make('tanggal_faktur'),

@@ -1,4 +1,6 @@
-# TODO for Customer ID Visibility in Faktur Form
+# TODO: Implement Upload Image Page in UploadResource
 
-- [x] Update FakturResource.php to make 'kode_customer' always visible and fix afterStateUpdated hook
-- [ ] Test the form to ensure customer ID appears after selecting a customer
+- [x] Fix app/Models/Upload.php: Change $table to 'upload'
+- [x] Update app/Filament/Resources/UploadResource.php: Add FileUpload component to the form for image uploads (accepts images, enables camera)
+- [x] Update the table in UploadResource to display the uploaded image
+- [x] Verify storage configuration for uploads
