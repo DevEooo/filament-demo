@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c86dd24a024d857fe406cc94b98252e5",
+    "content-hash": "396f66daad121cf5295f554365a05f4e",
     "packages": [
         {
             "name": "afatmustafa/blade-hugeicons",
@@ -1044,6 +1044,80 @@
                 }
             ],
             "time": "2025-03-06T22:45:56+00:00"
+        },
+        {
+            "name": "emmanpbarrameda/filament-take-picture-field",
+            "version": "v1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/emmanpbarrameda/filament-take-picture-field.git",
+                "reference": "2571341fa69643ff34624c881bdae0a65afbfce4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/emmanpbarrameda/filament-take-picture-field/zipball/2571341fa69643ff34624c881bdae0a65afbfce4",
+                "reference": "2571341fa69643ff34624c881bdae0a65afbfce4",
+                "shasum": ""
+            },
+            "require": {
+                "filament/forms": "^3.0|^4.0",
+                "php": "^8.1|^8.2|^8.3",
+                "spatie/laravel-package-tools": "^1.15.0"
+            },
+            "require-dev": {
+                "filament/filament": "^3.0|^4.0",
+                "laravel/framework": "^10.0|^11.0|^12.0",
+                "nunomaduro/collision": "^7.0|^8.0",
+                "orchestra/testbench": "^8.0|^9.0",
+                "pestphp/pest": "^2.0|^3.0",
+                "pestphp/pest-plugin-arch": "^2.0|^3.0",
+                "pestphp/pest-plugin-laravel": "^2.0|^3.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "emmanpbarrameda\\FilamentTakePictureField\\FilamentTakePictureFieldServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "emmanpbarrameda\\FilamentTakePictureField\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "emmanpbarrameda",
+                    "email": "emmanuelbarrameda1@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "FilamentTakePictureField Component for Filament Forms",
+            "homepage": "https://github.com/emmanpbarrameda/filament-take-picture-field",
+            "keywords": [
+                "emmanpbarrameda",
+                "filament",
+                "filament-take-picture-field",
+                "form-component",
+                "laravel",
+                "take-picture"
+            ],
+            "support": {
+                "issues": "https://github.com/emmanpbarrameda/filament-take-picture-field/issues",
+                "source": "https://github.com/emmanpbarrameda/filament-take-picture-field"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/emmanpbarrameda",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-09-23T01:15:52+00:00"
         },
         {
             "name": "filament/actions",

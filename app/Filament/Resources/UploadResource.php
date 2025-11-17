@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\ImageColumn;
+use Illuminate\Support\HtmlString;
+use App\Filament\Forms\Components\CameraCapture;
 
 class UploadResource extends Resource
 {
@@ -37,47 +39,13 @@ class UploadResource extends Resource
                     ->directory('uploads/uploaded')
                     ->visibility('public')
                     ->columnSpanFull(),
-                \emmanpbarrameda\FilamentTakePictureField\Forms\Components\TakePicture::make('captured_image')
-                    ->label('Ambil Foto')
-                    ->disk('public')
-                    ->directory('uploads/captured')
-                    ->visibility('public')
-                    ->imageQuality(90)
-                    ->aspect('1:1')
+                CameraCapture::make('captured_image')
+                    ->label('Ambil Gambar')
                     ->columnSpanFull(),
             ]);
     }
 
-    public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                ImageColumn::make('uploaded_image')
-                    ->label('Gambar Upload')
-                    ->height(100)
-                    ->width(100)
-                    ->disk('public'),
-                ImageColumn::make('captured_image')
-                    ->label('Foto Kamera')
-                    ->height(100)
-                    ->width(100)
-                    ->disk('public'),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat Pada')
-                    ->dateTime(),
-            ])
-            ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
-    }
+
 
     public static function getRelations(): array
     {
@@ -90,8 +58,6 @@ class UploadResource extends Resource
     {
         return [
             'index' => Pages\CreateUpload::route('/'),
-            'create' => Pages\CreateUpload::route('/create'),
-            'edit' => Pages\EditUpload::route('/{record}/edit'),
         ];
     }
 }
