@@ -42,6 +42,8 @@ class UploadResource extends Resource
                     ->disk('public')
                     ->directory('uploads/captured')
                     ->visibility('public')
+                    ->imageQuality(90)
+                    ->aspect('1:1')
                     ->columnSpanFull(),
             ]);
     }

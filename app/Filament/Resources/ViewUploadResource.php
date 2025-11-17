@@ -37,19 +37,15 @@ class ViewUploadResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('uploaded_image')
-                    ->label('File Unggahan')
-                    ->getStateUsing(fn($record) => $record->uploaded_image_url)
-                    ->disk('public')
-                    ->height(150)
-                    ->width(150),
-
-                ImageColumn::make('captured_image')
-                    ->label('Foto Kamera')
-                    ->getStateUsing(fn($record) => $record->captured_image_url)
-                    ->disk('public')
-                    ->height(150)
-                    ->width(150),
+                Tables\Columns\ViewColumn::make('images')
+                    ->label('Gambar')
+                    ->view('filament.tables.columns.upload-images')
+                    ->state(function ($record) {
+                        return [
+                            'uploaded' => $record->uploaded_image_url,
+                            'captured' => $record->captured_image_url,
+                        ];
+                    }),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Waktu Upload')
@@ -61,6 +57,20 @@ class ViewUploadResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('download_uploaded')
+                    ->label('Download Uploaded')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function ($record) {
+                        return response()->download(storage_path('app/public/' . $record->uploaded_image));
+                    })
+                    ->visible(fn ($record) => !empty($record->uploaded_image)),
+                Tables\Actions\Action::make('download_captured')
+                    ->label('Download Captured')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function ($record) {
+                        return response()->download(storage_path('app/public/' . $record->captured_image));
+                    })
+                    ->visible(fn ($record) => !empty($record->captured_image)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
