@@ -36,19 +36,20 @@ class ViewUploadResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            // ⚠️ CORRECTION: Add the columns to display the images
             ->columns([
                 ImageColumn::make('uploaded_image')
                     ->label('File Unggahan')
                     ->getStateUsing(fn($record) => $record->uploaded_image_url)
                     ->disk('public')
-                    ->size(150),
+                    ->height(150)
+                    ->width(150),
 
                 ImageColumn::make('captured_image')
                     ->label('Foto Kamera')
                     ->getStateUsing(fn($record) => $record->captured_image_url)
                     ->disk('public')
-                    ->size(150),
+                    ->height(150)
+                    ->width(150),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Waktu Upload')
@@ -62,9 +63,8 @@ class ViewUploadResource extends Resource
                 Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
-                // Admins should likely NOT be able to delete in a "Viewer" resource
                 Tables\Actions\BulkActionGroup::make([
-                    // Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->headerActions([

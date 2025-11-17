@@ -28,13 +28,19 @@ class UploadResource extends Resource
     {
         return $form
             ->schema([
-                FileUpload::make('path')
+                FileUpload::make('uploaded_image')
                     ->label('Upload Gambar')
                     ->image()
                     ->imageEditor()
                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                     ->maxSize(2048)
-                    ->directory('uploads')
+                    ->directory('uploads/uploaded')
+                    ->visibility('public')
+                    ->columnSpanFull(),
+                \emmanpbarrameda\FilamentTakePictureField\Forms\Components\TakePicture::make('captured_image')
+                    ->label('Ambil Foto')
+                    ->disk('public')
+                    ->directory('uploads/captured')
                     ->visibility('public')
                     ->columnSpanFull(),
             ]);
@@ -44,10 +50,16 @@ class UploadResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('path')
-                    ->label('Gambar')
+                ImageColumn::make('uploaded_image')
+                    ->label('Gambar Upload')
                     ->height(100)
-                    ->width(100),
+                    ->width(100)
+                    ->disk('public'),
+                ImageColumn::make('captured_image')
+                    ->label('Foto Kamera')
+                    ->height(100)
+                    ->width(100)
+                    ->disk('public'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat Pada')
                     ->dateTime(),
@@ -75,7 +87,7 @@ class UploadResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUploads::route('/'),
+            'index' => Pages\CreateUpload::route('/'),
             'create' => Pages\CreateUpload::route('/create'),
             'edit' => Pages\EditUpload::route('/{record}/edit'),
         ];
