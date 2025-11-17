@@ -28,17 +28,9 @@ class ViewUploadResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('uploaded_image')
-                    ->label('Gambar Upload (File)')
-                    ->disk('public')
-                    ->height(60)
-                    ->width(60),
-
-                Tables\Columns\ImageColumn::make('captured_image')
-                    ->label('Gambar Ambil (Kamera)')
-                    ->disk('public')
-                    ->height(60)
-                    ->width(60),
+                Tables\Columns\ViewColumn::make('images')
+                    ->label('Gambar')
+                    ->view('filament.tables.columns.upload-images'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Waktu Upload')
@@ -52,14 +44,14 @@ class ViewUploadResource extends Resource
                     ->label('Download File')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
-                    ->action(fn ($record) => Storage::download($record->uploaded_image))
+                    ->action(fn ($record) => Storage::disk('public')->download($record->uploaded_image))
                     ->visible(fn ($record) => !empty($record->uploaded_image)),
-                    
+
                 Tables\Actions\Action::make('download_captured')
                     ->label('Download Kamera')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('info')
-                    ->action(fn ($record) => Storage::download($record->captured_image))
+                    ->action(fn ($record) => Storage::disk('public')->download($record->captured_image))
                     ->visible(fn ($record) => !empty($record->captured_image)),
                 
                 Tables\Actions\DeleteAction::make(),

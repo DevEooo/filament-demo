@@ -29,4 +29,13 @@ class Upload extends Model
     {
         return $this->captured_image ? Storage::url($this->captured_image) : null;
     }
+
+    // Computed attribute for custom table column
+    public function getImagesAttribute(): array
+    {
+        return [
+            'uploaded' => $this->getUploadedImageUrlAttribute(),
+            'captured' => $this->getCapturedImageUrlAttribute(),
+        ];
+    }
 }
