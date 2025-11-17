@@ -2,26 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage; // Important for URL generation
 
 class Upload extends Model
 {
     use HasFactory;
 
-    protected $guarded = [];
+    // ⚠️ CRITICAL: Must match your migration table name
+    protected $table = 'upload'; 
 
-    protected $table = 'upload';
+    protected $fillable = [
+        'uploaded_image',
+        'captured_image',
+    ];
 
-    protected $appends = ['uploaded_image_url', 'captured_image_url'];
-
-    public function getUploadedImageUrlAttribute()
+    // Accessor for ViewUploadResource to correctly display uploaded image
+    public function getUploadedImageUrlAttribute(): ?string
     {
-        return $this->uploaded_image ? asset('storage/' . $this->uploaded_image) : null;
+        return $this->uploaded_image ? Storage::url($this->uploaded_image) : null;
     }
 
-    public function getCapturedImageUrlAttribute()
+    // Accessor for ViewUploadResource to correctly display captured image
+    public function getCapturedImageUrlAttribute(): ?string
     {
-        return $this->captured_image ? asset('storage/' . $this->captured_image) : null;
+        return $this->captured_image ? Storage::url($this->captured_image) : null;
     }
 }

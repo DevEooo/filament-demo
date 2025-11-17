@@ -1,120 +1,97 @@
-<x-dynamic-component
-    :component="$getFieldWrapperView()"
-    :field="$field"
->
-    <div
-        x-data="{
-            file: null,
-            fileUrl: null,
-            showCamera: false,
-            stream: null,
-            video: null,
-            canvas: null,
-            init() {
-                this.video = this.$refs.video;
-                this.canvas = this.$refs.canvas;
-            },
-            openCamera() {
-                this.showCamera = true;
-                navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment' }
-                }).then(stream => {
-                    this.stream = stream;
-                    this.video.srcObject = stream;
-                    this.video.play();
-                }).catch(err => {
-                    console.error('Error accessing camera:', err);
-                    alert('Camera access denied or not available');
-                    this.showCamera = false;
-                });
-            },
-            captureImage() {
-                const context = this.canvas.getContext('2d');
-                this.canvas.width = this.video.videoWidth;
-                this.canvas.height = this.video.videoHeight;
-                context.drawImage(this.video, 0, 0);
+{{-- resources/views/filament/forms/components/camera-capture.blade.php --}}
 
-                this.canvas.toBlob(blob => {
-                    const file = new File([blob], 'captured-image.jpg', { type: 'image/jpeg' });
-                    this.file = file;
-                    this.fileUrl = URL.createObjectURL(file);
-                    this.closeCamera();
-
-                    // Trigger Filament's file upload by setting the state
-                    $wire.set('{{ $getStatePath() }}', file);
-                }, 'image/jpeg');
-            },
-            closeCamera() {
-                this.showCamera = false;
-                if (this.stream) {
-                    this.stream.getTracks().forEach(track => track.stop());
-                }
+<x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
+    <div x-data="{
+        state: $wire.entangle('{{ $getStatePath() }}'),
+        stream: null,
+        capturedImage: null,
+        init() {
+            // Check for existing state (e.g., if editing)
+            if (this.state) {
+                this.capturedImage = '{{ asset('storage') }}' + '/' + this.state;
             }
-        }"
-        class="space-y-4"
-    >
-        <!-- Hidden file input for Filament -->
-        <input
-            x-ref="fileInput"
-            type="file"
-            accept="image/*"
-            style="display: none;"
-            @change="$wire.set($getStatePath(), $event.target.files[0])"
-        />
-
-        <!-- Camera Button -->
-        <button
-            type="button"
-            @click="openCamera()"
-            class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150"
-        >
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            </svg>
-            Ambil Gambar
-        </button>
-
-        <!-- Camera Modal -->
-        <div
-            x-show="showCamera"
-            x-cloak
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-            @keydown.escape.window="closeCamera()"
-        >
-            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Ambil Gambar</h3>
-                    <button @click="closeCamera()" class="text-gray-500 hover:text-gray-700">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
+        },
+        startCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                .then(stream => {
+                    this.stream = stream;
+                    this.$refs.video.srcObject = stream;
+                })
+                .catch(error => {
+                    alert('Tidak dapat mengakses kamera: ' + error.message);
+                    console.error('Kamera Error:', error);
+                });
+        },
+        stopCamera() {
+            if (this.stream) {
+                this.stream.getTracks().forEach(track => track.stop());
+                this.stream = null;
+            }
+        },
+        captureImage() {
+            const video = this.$refs.video;
+            const canvas = this.$refs.canvas;
+            
+            // Set canvas dimensions to match video stream
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Get data URL (Base64)
+            const imageData = canvas.toDataURL('image/png');
+            this.capturedImage = imageData;
+            
+            // Stop camera stream after capturing
+            this.stopCamera();
+            
+            // Send Base64 data to Livewire component for saving
+            $wire.call('saveFile', imageData).then(path => {
+                this.state = path;
+            });
+        }
+    }" 
+    x-on:close.stop="stopCamera()">
+    
+        <div class="space-y-4 p-4 border border-gray-300 rounded-lg">
+            
+            {{-- Camera Feed and Controls --}}
+            <template x-if="!capturedImage">
+                <div class="flex flex-col items-center space-y-3">
+                    <video x-ref="video" autoplay class="w-full rounded-md shadow-lg max-h-80"></video>
+                    <canvas x-ref="canvas" style="display: none;"></canvas>
+                    
+                    <div class="flex space-x-2">
+                        <x-filament::button color="gray" x-on:click="startCamera" x-show="!stream" icon="heroicon-o-video-camera">
+                            Buka Kamera
+                        </x-filament::button>
+                        
+                        <x-filament::button color="danger" x-on:click="stopCamera" x-show="stream" icon="heroicon-o-stop">
+                            Tutup Kamera
+                        </x-filament::button>
+                        
+                        <x-filament::button color="primary" x-on:click="captureImage" x-show="stream" icon="heroicon-o-camera">
+                            Ambil Gambar
+                        </x-filament::button>
+                    </div>
                 </div>
+            </template>
 
-                <video x-ref="video" class="w-full h-64 bg-black rounded" autoplay muted></video>
-                <canvas x-ref="canvas" class="hidden"></canvas>
-
-                <div class="flex justify-center mt-4 space-x-2">
-                    <button
-                        @click="captureImage()"
-                        class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                    >
-                        Ambil
-                    </button>
-                    <button
-                        @click="closeCamera()"
-                        class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                    >
-                        Batal
-                    </button>
+            {{-- Captured Image Preview --}}
+            <template x-if="capturedImage">
+                <div class="flex flex-col items-center space-y-3">
+                    <img :src="capturedImage" alt="Captured Image Preview" class="w-full rounded-md shadow-lg max-h-80">
+                    
+                    <div class="flex space-x-2">
+                        <x-filament::button color="warning" x-on:click="capturedImage = null; state = null; startCamera()" icon="heroicon-o-arrow-path">
+                            Ambil Ulang
+                        </x-filament::button>
+                        
+                        <p class="text-sm text-gray-500 italic">Gambar siap diunggah.</p>
+                    </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Preview -->
-        <div x-show="fileUrl" x-cloak class="mt-4">
-            <img :src="fileUrl" class="max-w-xs rounded shadow" />
+            </template>
         </div>
     </div>
 </x-dynamic-component>

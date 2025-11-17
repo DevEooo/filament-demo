@@ -3,33 +3,24 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ViewUploadResource\Pages;
-use App\Filament\Resources\ViewUploadResource\RelationManagers;
-use App\Models\Upload; // Make sure this is imported
-use Filament\Forms;
+use App\Models\Upload;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Columns\ImageColumn;
-use App\Filament\Resources\ViewUploadResource\Pages\EditViewUpload;
+use Illuminate\Support\Facades\Storage;
 
 class ViewUploadResource extends Resource
 {
-    // ⚠️ CORRECTED: Must point to your existing Upload model
     protected static ?string $model = Upload::class;
-
-    // Add Navigation Labels for clarity
     protected static ?string $navigationIcon = 'heroicon-o-eye';
-    protected static ?string $navigationLabel = 'Lihat Data Upload';
+    protected static ?string $navigationLabel = 'Lihat Data Upload (Tabel)';
     protected static ?string $slug = "view-upload-data";
-    protected static ?string $navigationGroup = 'Kelola';
-
+    protected static ?string $navigationGroup = 'Kelola Gambar';
 
     public static function form(Form $form): Form
     {
-        // No form needed for view-only resource
+        // No form needed for list view
         return $form;
     }
 
@@ -37,40 +28,41 @@ class ViewUploadResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ViewColumn::make('images')
-                    ->label('Gambar')
-                    ->view('filament.tables.columns.upload-images')
-                    ->state(function ($record) {
-                        return [
-                            'uploaded' => $record->uploaded_image_url,
-                            'captured' => $record->captured_image_url,
-                        ];
-                    }),
+                Tables\Columns\ImageColumn::make('uploaded_image')
+                    ->label('Gambar Upload (File)')
+                    ->disk('public')
+                    ->height(60)
+                    ->width(60),
+
+                Tables\Columns\ImageColumn::make('captured_image')
+                    ->label('Gambar Ambil (Kamera)')
+                    ->disk('public')
+                    ->height(60)
+                    ->width(60),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Waktu Upload')
                     ->sortable()
                     ->dateTime(),
             ])
-            ->filters([
-                //
-            ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
+                
                 Tables\Actions\Action::make('download_uploaded')
-                    ->label('Download Uploaded')
+                    ->label('Download File')
                     ->icon('heroicon-o-arrow-down-tray')
-                    ->action(function ($record) {
-                        return response()->download(storage_path('app/public/' . $record->uploaded_image));
-                    })
+                    ->color('success')
+                    ->action(fn ($record) => Storage::download($record->uploaded_image))
                     ->visible(fn ($record) => !empty($record->uploaded_image)),
+                    
                 Tables\Actions\Action::make('download_captured')
-                    ->label('Download Captured')
+                    ->label('Download Kamera')
                     ->icon('heroicon-o-arrow-down-tray')
-                    ->action(function ($record) {
-                        return response()->download(storage_path('app/public/' . $record->captured_image));
-                    })
+                    ->color('info')
+                    ->action(fn ($record) => Storage::download($record->captured_image))
                     ->visible(fn ($record) => !empty($record->captured_image)),
+                
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -78,21 +70,24 @@ class ViewUploadResource extends Resource
                 ]),
             ])
             ->headerActions([
-                //
+                // Add a button to easily navigate to the Upload form
+                Tables\Actions\Action::make('new_upload')
+                    ->label('Upload Gambar Baru')
+                    ->icon('heroicon-o-plus')
+                    ->button()
+                    ->url(fn (): string => UploadResource::getUrl('index'))
             ]);
     }
-    // ... rest of the class methods (getRelations, getPages) remain mostly the same
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
+    
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListViewUploads::route('/'),
-            'view' => Pages\EditViewUpload::route('/{record}'),
+            'view' => Pages\ViewViewUpload::route('/{record}'),
         ];
     }
+    
+    // Disable creation in this resource, it's handled by UploadResource
+    public static function canCreate(): bool { return false; }
+
 }
